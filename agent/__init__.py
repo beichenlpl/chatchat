@@ -21,6 +21,9 @@ class Agent(ABC):
     def set_prompt_variable(self, name: str, value: str):
         self.prompt = self.prompt.replace(f"{{{{{name}}}}}", value)
 
+    def reset(self):
+        self.chat.reset()
+
     def execute(self) -> str:
         if not self.open_history:
             self.chat.reset()
