@@ -12,14 +12,14 @@ chat = ChatModel(
 )
 
 
-def call_agent(code: str):
+def call_agent(code: str, question: str = ""):
     if code == "hotspot_extract":
         return hotspot_extract_agent.execute()
     else:
         return "Agent not found"
 
 
-def call_agent_stream(code: str):
+def call_agent_stream(code: str, question: str = ""):
     if code == "hotspot_extract":
         print(f"调用智能体：{hotspot_extract_agent.name}")
         return hotspot_extract_agent.execute_stream()
