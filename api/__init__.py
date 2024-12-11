@@ -9,7 +9,7 @@ from model import ChatModel
 from agent.hotspot_extract_agent import hotspot_extract_agent
 
 
-app = FastAPI()
+app = FastAPI(title="ChatChat API", description="ChatChat API", version="1.0.0")
 
 model = ChatModel(
     url=chatchat_config["model_list"][chatchat_config["current_model"]]["url"],
