@@ -34,6 +34,7 @@ async def chat_generate_response(prompt: str) -> Generator[str, None, None]:
     for chunk in model.stream_chat():
         yield b"data: { \"message\": \"" + chunk.encode('utf-8') + b"\" }"
         yield b"\n\n"
+    yield b"data: [DONE]"
 
 async def agent_generate_response(code: str, question: str) -> Generator[str, None, None]:
     if code == "hotspot_extract":
@@ -44,6 +45,7 @@ async def agent_generate_response(code: str, question: str) -> Generator[str, No
     else:
         yield b"data: { \"message\": \"Agent not found\" }"
         yield b"\n\n"
+    yield b"data: [DONE]"
 
 @app.get("/reset")
 async def reset() -> dict:
