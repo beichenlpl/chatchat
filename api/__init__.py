@@ -1,13 +1,12 @@
-import uvicorn
-
 from typing import Generator
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from agent.store import agent_store
 from config import chatchat_config
 from model import ChatModel
-from agent.hotspot_extract_agent import hotspot_extract_agent
-
 
 app = FastAPI(title="ChatChat API", description="ChatChat API", version="1.0.0")
 
@@ -37,9 +36,13 @@ async def chat_generate_response(prompt: str) -> Generator[str, None, None]:
     yield b"data: [DONE]"
 
 async def agent_generate_response(code: str, question: str) -> Generator[str, None, None]:
-    if code == "hotspot_extract":
-        print(f"调用智能体：{hotspot_extract_agent.name}")
-        for chunk in hotspot_extract_agent.execute_stream():
+    crt_agent = agent_store.get(code)
+    if crt_agent:
+        name = crt_agent.get("agent").name
+        print(f"调用智能体：{name}")
+        if crt_agent.get("is_params"):
+            crt_agent.get("agent").set_prompt_variable(crt_agent.get("param_variable"), question)
+        for chunk in crt_agent.get("agent").execute_stream():
             yield b"data: { \"message\": \"" + chunk.encode('utf-8') + b"\" }"
             yield b"\n\n"
     else:
@@ -68,7 +71,15 @@ async def agent(request: AgentRequest):
     if request.stream:
         return StreamingResponse(agent_generate_response(request.code, request.question), media_type='text/plain')
     else:
-        return {"message": hotspot_extract_agent.execute()}
+        crt_agent = agent_store.get(request.code)
+        if crt_agent:
+            name = crt_agent.get("agent").name
+            print(f"调用智能体：{name}")
+            if crt_agent.get("is_params"):
+                crt_agent.get("agent").set_prompt_variable(crt_agent.get("param_variable"), request.question)
+            return {"message": crt_agent.get("agent").execute()}
+        else:
+            return {"message": "Agent not found"}
 
 
 

@@ -24,16 +24,22 @@ class ChatModel(object):
 
     def chat(self) -> str:
         response = self.__request(False)
-        return response.json()["choices"][0]["message"]["content"]
+        content = response.json()["choices"][0]["message"]["content"]
+        self.messages.append({"role": "assistant", "content": content})
+        return content
 
     def stream_chat(self) -> Generator[str, None, None]:
         response = self.__request(True)
+        content = ""
         for line in response.iter_lines():
             if line:
                 data_line = line.decode('utf-8')[6:]
                 if data_line == "[DONE]":
                     break
-                yield json.loads(data_line)["choices"][0]["delta"]["content"]
+                chunk = json.loads(data_line)["choices"][0]["delta"]["content"]
+                yield chunk
+                content += chunk
+        self.messages.append({"role": "assistant", "content": content})
 
 
     def __request(self, stream: bool):

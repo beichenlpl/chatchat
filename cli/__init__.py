@@ -1,4 +1,4 @@
-from agent.hotspot_extract_agent import hotspot_extract_agent
+from agent.store import agent_store
 from config import chatchat_config
 from model import ChatModel
 
@@ -12,19 +12,33 @@ chat = ChatModel(
 )
 
 
-def call_agent(code: str, question: str = ""):
-    if code == "hotspot_extract":
-        return hotspot_extract_agent.execute()
+def call_agent(code: str):
+    crt_agent = agent_store.get(code)
+    if crt_agent:
+        name = crt_agent.get("agent").name
+        print(f"调用智能体：{name}")
+        if crt_agent.get("is_params"):
+            question = input("User：")
+            crt_agent.get("agent").set_prompt_variable(crt_agent.get("param_variable"), question)
+        return crt_agent.get("agent").execute()
     else:
         return "Agent not found"
 
 
-def call_agent_stream(code: str, question: str = ""):
-    if code == "hotspot_extract":
-        print(f"调用智能体：{hotspot_extract_agent.name}")
-        return hotspot_extract_agent.execute_stream()
+
+
+def call_agent_stream(code: str):
+    crt_agent = agent_store.get(code)
+    if crt_agent:
+        name = crt_agent.get("agent").name
+        print(f"调用智能体：{name}")
+        if crt_agent.get("is_params"):
+            question = input("User：")
+            crt_agent.get("agent").set_prompt_variable(crt_agent.get("param_variable"), question)
+        return crt_agent.get("agent").execute_stream()
     else:
         return "Agent not found"
+
 
 def chat_in_cli() -> None:
     while True:
