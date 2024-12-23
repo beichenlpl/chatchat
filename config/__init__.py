@@ -10,5 +10,9 @@ chatchat_config = {
             "temperature": 0.7,
             "top_p": 0.95
         }
-    ]
+    ],
+    "mini_search": {
+        "data": "search_data",
+        "default_index": "default"
+    }
 }
