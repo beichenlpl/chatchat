@@ -29,7 +29,7 @@ event_summary = EventSummary(chat=ChatModel(
 
 示例：
 输入
-```text
+```textile
 猎人去打猎，一棵树上站着10只鸟，猎人开枪打死了一只，这颗树上的鸟都飞走了。
 ```
 输出
