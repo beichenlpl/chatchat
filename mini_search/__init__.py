@@ -125,7 +125,7 @@ class MiniSearch(object):
             file_remove(index_path)
         return True
 
-    def search(self, query: str, page: int, limit: int, sort_by: str = "default"):
+    def search(self, query: str, page: int = 0, limit: int = 10, sort_by: str = "default"):
         index_path = Path(f"{self.__data_path}/{self.__current_index}")
         index_mapping_path = Path(f"{index_path}/_index")
         if not index_path.exists():
