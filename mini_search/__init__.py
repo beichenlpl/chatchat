@@ -125,7 +125,7 @@ class MiniSearch(object):
             file_remove(index_path)
         return True
 
-    def search(self, query: str, sort_by: str = "default"):
+    def search(self, query: str, page: int, limit: int, sort_by: str = "default"):
         index_path = Path(f"{self.__data_path}/{self.__current_index}")
         index_mapping_path = Path(f"{index_path}/_index")
         if not index_path.exists():
@@ -163,10 +163,17 @@ class MiniSearch(object):
                                         data["_word_index"] = data["data"].find(item)
                                         result.append(data)
 
-                if sort_by == "default":
-                    return result
-                elif sort_by == "timestamp":
-                    return sorted(result, key=lambda x: x["timestamp"], reverse=True)
+                if page is not None and limit is not None:
+                    if sort_by == "default":
+                        return result[page * limit:(page + 1) * limit]
+                    elif sort_by == "timestamp":
+                        return sorted(result, key=lambda x: x["timestamp"], reverse=True)[page * limit:(page + 1) * limit]
+                else:
+                    if sort_by == "default":
+                        return result
+                    elif sort_by == "timestamp":
+                        return sorted(result, key=lambda x: x["timestamp"], reverse=True)
+
 
     def add(self, doc_name: str, doc_content: str, _id: Union[int, str, None] = None):
         return self.create(doc_name, doc_content, _id), self
