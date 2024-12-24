@@ -56,7 +56,7 @@ class MiniSearch(object):
                         "doc_ids": [_id]
                     }
 
-            for item in jieba.cut(doc_content):
+            for item in jieba.lcut(doc_content):
                 if index_mapping.get(item):
                     if _id in index_mapping[item]["doc_ids"]:
                         continue
@@ -81,7 +81,7 @@ class MiniSearch(object):
                             "doc_ids": [_id]
                         }
 
-                for item in jieba.cut(doc_content):
+                for item in jieba.lcut(doc_content):
                     if index_mapping.get(item):
                         if _id in index_mapping[item]["doc_ids"]:
                             continue
@@ -147,7 +147,7 @@ class MiniSearch(object):
                             data["_word_index"] = data["data"].find(query)
                             result.append(data)
 
-                for item in jieba.cut(query):
+                for item in sorted(jieba.lcut(query), key=lambda x: len(x), reverse=True):
                     if not index_mapping.get(item):
                         continue
                     else:

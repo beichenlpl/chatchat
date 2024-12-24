@@ -8,7 +8,9 @@ chat = ChatModel(
     model=chatchat_config["model_list"][chatchat_config["current_model"]]["name"],
     max_tokens=chatchat_config["model_list"][chatchat_config["current_model"]]["max_tokens"],
     temperature=chatchat_config["model_list"][chatchat_config["current_model"]]["temperature"],
-    top_p=chatchat_config["model_list"][chatchat_config["current_model"]]["top_p"]
+    top_p=chatchat_config["model_list"][chatchat_config["current_model"]]["top_p"],
+    memory_enhance=chatchat_config["model_list"][chatchat_config["current_model"]]["memory_enhance"],
+    top_n=chatchat_config["model_list"][chatchat_config["current_model"]]["top_n"],
 )
 
 

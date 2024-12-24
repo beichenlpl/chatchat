@@ -16,19 +16,25 @@ model = ChatModel(
     model=chatchat_config["model_list"][chatchat_config["current_model"]]["name"],
     max_tokens=chatchat_config["model_list"][chatchat_config["current_model"]]["max_tokens"],
     temperature=chatchat_config["model_list"][chatchat_config["current_model"]]["temperature"],
-    top_p=chatchat_config["model_list"][chatchat_config["current_model"]]["top_p"]
+    top_p=chatchat_config["model_list"][chatchat_config["current_model"]]["top_p"],
+    memory_enhance=chatchat_config["model_list"][chatchat_config["current_model"]]["memory_enhance"],
+    top_n = chatchat_config["model_list"][chatchat_config["current_model"]]["top_n"],
 )
 
 class ChatRequest(BaseModel):
     prompt: str = Field(description="用户请求问题", examples=["你好"])
     stream: bool = Field(default=False, description="是否流式输出")
+    memory_enhance: bool = Field(default=False, description="是否增强记忆")
+    top_n: int = Field(default=3, description="记忆召回数量")
 
 class AgentRequest(BaseModel):
     code: str = Field(description="智能体代码", examples=["hotspot_extract"])
     question: str = Field(default="", description="用户请求问题(非必选参数)", examples=["你好"])
     stream: bool = Field(default=False, description="是否流式输出")
 
-async def chat_generate_response(prompt: str) -> Generator[str, None, None]:
+async def chat_generate_response(prompt: str, memory_enhance: bool, top_n: int) -> Generator[str, None, None]:
+    model.memory_enhance = memory_enhance
+    model.top_n = top_n
     model.prompt(prompt)
     for chunk in model.stream_chat():
         yield b"data: { \"message\": \"" + chunk.encode('utf-8') + b"\" }"
@@ -59,8 +65,10 @@ async def reset() -> dict:
 async def chat(request: ChatRequest):
     print(f"请求参数：{request}")
     if request.stream:
-        return StreamingResponse(chat_generate_response(request.prompt), media_type='text/plain')
+        return StreamingResponse(chat_generate_response(request.prompt, request.memory_enhance, request.top_n), media_type='text/plain')
     else:
+        model.memory_enhance = request.memory_enhance
+        model.top_n = request.top_n
         model.prompt(request.prompt)
         return {"message": model.chat()}
 
