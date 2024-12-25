@@ -9,10 +9,8 @@ from typing import Union
 
 from config import chatchat_config
 
-
 def id_generate():
     return uuid.uuid4().hex
-
 
 def file_remove(path: Path):
     if path.is_file():
@@ -25,7 +23,6 @@ def file_remove(path: Path):
                 file_remove(item)
         else:
             path.rmdir()
-
 
 class MiniSearch(object):
     def __init__(self):
@@ -114,6 +111,8 @@ class MiniSearch(object):
 
     def drop(self) -> bool:
         index_path = Path(f"{self.__data_path}/{self.__current_index}")
+        if not index_path.exists():
+            return True
         if self.__current_index == chatchat_config["mini_search"]["default_index"]:
             index_mapping_path = Path(f"{index_path}/_index")
             with index_mapping_path.open("w", encoding="utf-8") as index_writer:
@@ -173,7 +172,6 @@ class MiniSearch(object):
                         return result
                     elif sort_by == "timestamp":
                         return sorted(result, key=lambda x: x["timestamp"], reverse=True)
-
 
     def add(self, doc_name: str, doc_content: str, _id: Union[int, str, None] = None):
         return self.create(doc_name, doc_content, _id), self
