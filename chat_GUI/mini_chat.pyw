@@ -271,7 +271,7 @@ class ChatModel(object):
                 chunk = json.loads(data_line)["choices"][0]["delta"].get("content")
                 if chunk:
                     yield chunk
-                content += chunk
+                    content += chunk
         self.messages.append({"role": "assistant", "content": content})
         if self.memory_enhance:
             threading.Thread(target=self.mini_search.index("__model_chat_history_index__").create, args=(uuid.uuid4().hex, content)).start()
@@ -334,7 +334,8 @@ def _send():
             model_output_text.insert(END, chunk)
             model_output_text.see(END)
     except Exception as e:
-        messagebox.showerror("错误", "模型参数错误：" + str(e))
+        raise e
+        # messagebox.showerror("错误", "模型参数错误：" + str(e))
 
 root = Tk()
 root.title("mini chat")

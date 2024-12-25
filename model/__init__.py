@@ -55,7 +55,7 @@ class ChatModel(object):
                 chunk = json.loads(data_line)["choices"][0]["delta"].get("content")
                 if chunk:
                     yield chunk
-                content += chunk
+                    content += chunk
         self.messages.append({"role": "assistant", "content": content})
         if self.memory_enhance:
             threading.Thread(target=self.mini_search.index("__model_chat_history_index__").create, args=(uuid.uuid4().hex, content)).start()
