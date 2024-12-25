@@ -268,8 +268,9 @@ class ChatModel(object):
                 data_line = line.decode('utf-8')[6:]
                 if data_line == "[DONE]":
                     break
-                chunk = json.loads(data_line)["choices"][0]["delta"]["content"]
-                yield chunk
+                chunk = json.loads(data_line)["choices"][0]["delta"].get("content")
+                if chunk:
+                    yield chunk
                 content += chunk
         self.messages.append({"role": "assistant", "content": content})
         if self.memory_enhance:
