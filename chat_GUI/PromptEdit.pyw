@@ -1,10 +1,16 @@
-import copy
+import jieba
+import requests
 import json
-import os
-import threading
-import time
 import uuid
+import threading
+import os
+import time
+import copy
 from pathlib import Path
+from typing import (
+    Union,
+    Generator
+)
 from tkinter import (
     Tk,
     Label,
@@ -17,17 +23,11 @@ from tkinter import (
     IntVar,
     messagebox
 )
-from typing import (
-    Union,
-    Generator
-)
-
-import jieba
-import requests
 
 
 def id_generate():
     return uuid.uuid4().hex
+
 
 def file_remove(path: Path):
     if path.is_file():
@@ -40,6 +40,7 @@ def file_remove(path: Path):
                 file_remove(item)
         else:
             path.rmdir()
+
 
 class MiniSearch(object):
     def __init__(self):
@@ -183,7 +184,8 @@ class MiniSearch(object):
                     if sort_by == "default":
                         return result[page * limit:(page + 1) * limit]
                     elif sort_by == "timestamp":
-                        return sorted(result, key=lambda x: x["timestamp"], reverse=True)[page * limit:(page + 1) * limit]
+                        return sorted(result, key=lambda x: x["timestamp"], reverse=True)[
+                               page * limit:(page + 1) * limit]
                 else:
                     if sort_by == "default":
                         return result
@@ -228,7 +230,8 @@ class MiniSearch(object):
 
 
 class ChatModel(object):
-    def __init__(self, url: str, api_key, model: str, max_tokens: int, temperature: float, top_p: float, memory_enhance: bool = False, top_n: int = 3):
+    def __init__(self, url: str, api_key, model: str, max_tokens: int, temperature: float, top_p: float,
+                 memory_enhance: bool = False, top_n: int = 3):
         self.url = url
         self.api_key = api_key
         self.model = model
@@ -239,7 +242,6 @@ class ChatModel(object):
         self.mini_search = MiniSearch()
         self.memory_enhance = memory_enhance
         self.top_n = top_n
-
 
     def prompt(self, prompt: str):
         if len(self.messages) > 10:
@@ -259,7 +261,8 @@ class ChatModel(object):
         content = response.json()["choices"][0]["message"]["content"]
         self.messages.append({"role": "assistant", "content": content})
         if self.memory_enhance:
-            threading.Thread(target=self.mini_search.index("__model_chat_history_index__").create, args=(uuid.uuid4().hex, content)).start()
+            threading.Thread(target=self.mini_search.index("__model_chat_history_index__").create,
+                             args=(uuid.uuid4().hex, content)).start()
         return content
 
     def stream_chat(self) -> Generator[str, None, None]:
@@ -276,8 +279,8 @@ class ChatModel(object):
                     content += chunk
         self.messages.append({"role": "assistant", "content": content})
         if self.memory_enhance:
-            threading.Thread(target=self.mini_search.index("__model_chat_history_index__").create, args=(uuid.uuid4().hex, content)).start()
-
+            threading.Thread(target=self.mini_search.index("__model_chat_history_index__").create,
+                             args=(uuid.uuid4().hex, content)).start()
 
     def __request(self, stream: bool):
         headers = {
@@ -304,32 +307,38 @@ chat = ChatModel(
     top_p=0.95
 )
 
-# 更新模型参数
-def update_model():
+
+def update():
     chat.url = model_url_var.get()
-    chat.api_key = model_api_key_var.get()
+    chat.api_key = api_key_var.get()
     chat.model = model_name_var.get()
     chat.max_tokens = int(max_tokens_var.get())
     chat.temperature = float(temperature_var.get())
     chat.top_p = float(top_p_var.get())
-    chat.memory_enhance = memory_enhance_checkbox_var.get() == 1
-    chat.top_n = int(memory_enhance_top_n_var.get())
+    chat.memory_enhance = memory_enhance_var.get() == 1
+    chat.top_n = 10
 
-# 新建对话
+    var_list = variable_text.get(1.0, END).split("----")
+    prompt = prompt_text.get(1.0, END)
+    for item in var_list:
+        var_name, var_value = item.strip().split("=")
+        prompt = prompt.replace(f"{{{{{var_name}}}}}", var_value)
+
+    chat.prompt(prompt)
+
 def reset():
     chat.reset()
-    user_input_text.delete("1.0", END)
     model_output_text.delete("1.0", END)
 
 def send():
     threading.Thread(target=_send).start()
 
 def _send():
-    update_model()
-    prompt = user_input_text.get("1.0", END)
     if history_checkbox_var.get() != 1:
         chat.reset()
-    chat.prompt(prompt)
+
+    update()
+
     try:
         model_output_text.delete("1.0", END)
         for chunk in chat.stream_chat():
@@ -339,97 +348,103 @@ def _send():
         # raise e
         messagebox.showerror("错误", "模型参数错误：" + str(e))
 
+
 root = Tk()
-root.title("mini chat")
-root.geometry("850x800")
+root.title("PromptEdit")
+root.geometry("1330x800")
 root.resizable(False, False)
 
 # 模型地址
-model_url_label = Label(root, text="模型地址:", font=("微软雅黑", 12))
-model_url_label.place(x=10, y=10)
+model_url_label = Label(root, text="模型地址：", font={"宋体", 11})
+model_url_label.grid(row=0, column=0)
 model_url_var = StringVar()
-model_url_entry = Entry(root, textvariable=model_url_var, width=105)
-model_url_entry.place(x=95, y=15)
+model_url_entry = Entry(root, textvariable=model_url_var, width=50)
+model_url_entry.grid(row=0, column=1)
 
-# 模型API Key
-model_api_key_label = Label(root, text="API Key:", font=("微软雅黑", 12))
-model_api_key_label.place(x=10, y=50)
-model_api_key_var = StringVar()
-model_api_key_password_entry = Entry(root, textvariable=model_api_key_var, width=105, show="*")
-model_api_key_password_entry.place(x=95, y=55)
+# API Key
+api_key_label = Label(root, text="API Key：", font={"宋体", 11})
+api_key_label.grid(row=0, column=2)
+api_key_var = StringVar()
+api_key_entry = Entry(root, textvariable=api_key_var, width=50, show="*")
+api_key_entry.grid(row=0, column=3)
 
 # 模型名称
-model_name_label = Label(root, text="模型名称:", font=("微软雅黑", 12))
-model_name_label.place(x=10, y=95)
+model_name_label = Label(root, text="模型名称：", font={"宋体", 11})
+model_name_label.grid(row=0, column=4)
 model_name_var = StringVar()
-model_name_entry = Entry(root, textvariable=model_name_var, width=105)
-model_name_entry.place(x=95, y=95)
+model_name_entry = Entry(root, textvariable=model_name_var, width=50)
+model_name_entry.grid(row=0, column=5)
 
 # 最大token
-max_tokens_label = Label(root, text="最大token:", font=("微软雅黑", 12))
-max_tokens_label.place(x=10, y=130)
+max_tokens_label = Label(root, text="最大Token：", font={"宋体", 11})
+max_tokens_label.grid(row=1, column=0)
 max_tokens_var = StringVar()
 max_tokens_var.set("4096")
-max_tokens_entry = Entry(root, textvariable=max_tokens_var, width=105)
-max_tokens_entry.place(x=95, y=135)
+max_tokens_entry = Entry(root, textvariable=max_tokens_var, width=50)
+max_tokens_entry.grid(row=1, column=1)
 
 # 温度
-temperature_label = Label(root, text="温度:", font=("微软雅黑", 12))
-temperature_label.place(x=10, y=170)
+temperature_label = Label(root, text="温度：", font={"宋体", 11})
+temperature_label.grid(row=1, column=2)
 temperature_var = StringVar()
 temperature_var.set("0.7")
-temperature_entry = Entry(root, textvariable=temperature_var, width=105)
-temperature_entry.place(x=95, y=175)
+temperature_entry = Entry(root, textvariable=temperature_var, width=50)
+temperature_entry.grid(row=1, column=3)
 
 # 概率
-top_p_label = Label(root, text="概率:", font=("微软雅黑", 12))
-top_p_label.place(x=10, y=210)
+top_p_label = Label(root, text="top_p：", font={"宋体", 11})
+top_p_label.grid(row=1, column=4)
 top_p_var = StringVar()
 top_p_var.set("0.95")
-top_p_entry = Entry(root, textvariable=top_p_var, width=105)
-top_p_entry.place(x=95, y=215)
+top_p_entry = Entry(root, textvariable=top_p_var, width=50)
+top_p_entry.grid(row=1, column=5)
 
-# 是否开启历史记录
-history_label = Label(root, text="历史记录:", font=("微软雅黑", 12))
-history_label.place(x=10, y=250)
+# 空白占位
+span_label = Label(root, text=" ", font={"宋体", 11})
+span_label.grid(row=2, column=0)
+
+# 变量设置区域
+variable_label = Label(root, text="变量（你可以在此区域定义变量，不同变量使用“----”符号分隔，具体参考如下）",
+                       font={"宋体", 11})
+variable_label.grid(row=3, column=0, columnspan=10, sticky="w")
+variable_text = Text(root, width=90, height=5, font={"宋体", 11})
+variable_text.insert(END, """
+input1=变量值1
+----
+input2=变量值2
+""")
+variable_text.grid(row=4, column=0, columnspan=10, padx=3, sticky="w")
+
+# 提示词编写区域
+prompt_label = Label(root, text="提示词（变量引入时，使用双花括号包裹, 例如：{{input1}}）", font={"宋体", 11})
+prompt_label.grid(row=5, column=0, columnspan=10, sticky="w")
+prompt_text = Text(root, width=90, height=36, font={"宋体", 11})
+prompt_text.grid(row=6, column=0, columnspan=10, padx=3, sticky="w")
+
+# 历史记录
+history_label = Label(root, text="历史记录", font={"宋体", 11}, width=8)
+history_label.grid(row=3, column=3, sticky="e")
 history_checkbox_var = IntVar()
 history_checkbox = Checkbutton(root, variable=history_checkbox_var)
-history_checkbox.place(x=80, y=255)
+history_checkbox.grid(row=3, column=4, sticky="w")
 
-# 是否开启记忆增强
-memory_enhance_label = Label(root, text="记忆增强:", font=("微软雅黑", 12))
-memory_enhance_label.place(x=125, y=250)
-memory_enhance_checkbox_var = IntVar()
-memory_enhance_checkbox = Checkbutton(root, variable=memory_enhance_checkbox_var)
-memory_enhance_checkbox.place(x=200, y=255)
-
-# 记忆增强top_n
-memory_enhance_top_n_label = Label(root, text="记忆增强top_n:", font=("微软雅黑", 12))
-memory_enhance_top_n_label.place(x=245, y=250)
-memory_enhance_top_n_var = StringVar()
-memory_enhance_top_n_var.set("3")
-memory_enhance_top_n_entry = Entry(root, textvariable=memory_enhance_top_n_var, width=30)
-memory_enhance_top_n_entry.place(x=370, y=255)
-
-# 用户输入
-user_input_label = Label(root, text="用户输入:", font=("微软雅黑", 12))
-user_input_label.place(x=10, y=290)
-user_input_text = Text(root, width=90, height=10)
-user_input_text.place(x=95, y=295)
-
-# 模型输出
-model_output_label = Label(root, text="模型输出:", font=("微软雅黑", 12))
-model_output_label.place(x=10, y=440)
-model_output_text = Text(root, width=105, height=20)
-model_output_text.place(x=95, y=445)
-
+# 记忆增强
+memory_enhance_label = Label(root, text="记忆增强", font={"宋体", 11}, width=8)
+memory_enhance_label.grid(row=4, column=3, sticky="ne")
+memory_enhance_var = IntVar()
+memory_enhance_checkbox = Checkbutton(root, variable=memory_enhance_var)
+memory_enhance_checkbox.grid(row=4, column=4, sticky="nw")
 
 # 发送按钮
-send_button = Button(root, text="发送", font=("微软雅黑", 12), width=8, height=1, command=send)
-send_button.place(x=750, y=290)
-# 重置按钮
-reset_button = Button(root, text="重置", font=("微软雅黑", 12), width=8, height=1, command=reset)
-reset_button.place(x=750, y=340)
+send_button = Button(root, text="发送", width=20, font={"宋体", 11}, command=send)
+send_button.grid(row=3, column=5, sticky="w")
 
+# 重置按钮
+reset_button = Button(root, text="重置", width=20, font={"宋体", 11}, command=reset)
+reset_button.grid(row=3, column=5, sticky="e")
+
+# 模型输出
+model_output_text = Text(root, width=70, height=40, font={"宋体", 11})
+model_output_text.grid(row=4, column=3, rowspan=4, columnspan=10, sticky="se")
 
 root.mainloop()

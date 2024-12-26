@@ -1,3 +1,4 @@
 @echo off
 pip install pyinstaller
-pyinstaller --onefile --noconsole mini_chat.pyw
+pyinstaller --onefile mini_chat.pyw
+pyinstaller --onefile PromptEdit.pyw
