@@ -351,100 +351,101 @@ def _send():
 
 root = Tk()
 root.title("PromptEdit")
-root.geometry("1330x800")
+root.geometry("1300x800")
 root.resizable(False, False)
 
 # 模型地址
-model_url_label = Label(root, text="模型地址：", font={"宋体", 11})
-model_url_label.grid(row=0, column=0)
+model_url_label = Label(root, text="模型地址：", font={"宋体", 11}, width=10)
+model_url_label.place(x=20, y=10)
 model_url_var = StringVar()
 model_url_entry = Entry(root, textvariable=model_url_var, width=50)
-model_url_entry.grid(row=0, column=1)
+model_url_entry.place(x=100, y=10)
+
 
 # API Key
-api_key_label = Label(root, text="API Key：", font={"宋体", 11})
-api_key_label.grid(row=0, column=2)
+api_key_label = Label(root, text="API Key：", font={"宋体", 11}, width=10)
+api_key_label.place(x=450, y=10)
 api_key_var = StringVar()
 api_key_entry = Entry(root, textvariable=api_key_var, width=50, show="*")
-api_key_entry.grid(row=0, column=3)
+api_key_entry.place(x=520, y=10)
+
 
 # 模型名称
-model_name_label = Label(root, text="模型名称：", font={"宋体", 11})
-model_name_label.grid(row=0, column=4)
+model_name_label = Label(root, text="模型名称：", font={"宋体", 11}, width=10)
+model_name_label.place(x=820, y=10)
 model_name_var = StringVar()
 model_name_entry = Entry(root, textvariable=model_name_var, width=50)
-model_name_entry.grid(row=0, column=5)
+model_name_entry.place(x=900, y=10)
+
 
 # 最大token
-max_tokens_label = Label(root, text="最大Token：", font={"宋体", 11})
-max_tokens_label.grid(row=1, column=0)
+max_tokens_label = Label(root, text="最大Token：", font={"宋体", 11}, width=10)
+max_tokens_label.place(x=20, y=40)
 max_tokens_var = StringVar()
 max_tokens_var.set("4096")
 max_tokens_entry = Entry(root, textvariable=max_tokens_var, width=50)
-max_tokens_entry.grid(row=1, column=1)
+max_tokens_entry.place(x=100, y=40)
 
 # 温度
-temperature_label = Label(root, text="温度：", font={"宋体", 11})
-temperature_label.grid(row=1, column=2)
+temperature_label = Label(root, text="温度：", font={"宋体", 11}, width=10)
+temperature_label.place(x=450, y=40)
 temperature_var = StringVar()
 temperature_var.set("0.7")
 temperature_entry = Entry(root, textvariable=temperature_var, width=50)
-temperature_entry.grid(row=1, column=3)
+temperature_entry.place(x=520, y=40)
 
 # 概率
-top_p_label = Label(root, text="top_p：", font={"宋体", 11})
-top_p_label.grid(row=1, column=4)
+top_p_label = Label(root, text="top_p：", font={"宋体", 11}, width=10)
+top_p_label.place(x=820, y=40)
 top_p_var = StringVar()
 top_p_var.set("0.95")
 top_p_entry = Entry(root, textvariable=top_p_var, width=50)
-top_p_entry.grid(row=1, column=5)
-
-# 空白占位
-span_label = Label(root, text=" ", font={"宋体", 11})
-span_label.grid(row=2, column=0)
+top_p_entry.place(x=900, y=40)
 
 # 变量设置区域
 variable_label = Label(root, text="变量（你可以在此区域定义变量，不同变量使用“----”符号分隔，具体参考如下）",
                        font={"宋体", 11})
-variable_label.grid(row=3, column=0, columnspan=10, sticky="w")
-variable_text = Text(root, width=90, height=5, font={"宋体", 11})
+variable_label.place(x=20, y=70)
+variable_text = Text(root, width=85, height=5, font={"宋体", 11})
 variable_text.insert(END, """
 input1=变量值1
 ----
 input2=变量值2
 """)
-variable_text.grid(row=4, column=0, columnspan=10, padx=3, sticky="w")
+variable_text.place(x=20, y=100)
+
 
 # 提示词编写区域
 prompt_label = Label(root, text="提示词（变量引入时，使用双花括号包裹, 例如：{{input1}}）", font={"宋体", 11})
-prompt_label.grid(row=5, column=0, columnspan=10, sticky="w")
-prompt_text = Text(root, width=90, height=36, font={"宋体", 11})
-prompt_text.grid(row=6, column=0, columnspan=10, padx=3, sticky="w")
+prompt_label.place(x=20, y=190)
+prompt_text = Text(root, width=85, height=35, font={"宋体", 11})
+prompt_text.place(x=20, y=220)
+
 
 # 历史记录
 history_label = Label(root, text="历史记录", font={"宋体", 11}, width=8)
-history_label.grid(row=3, column=3, sticky="e")
+history_label.place(x=730, y=90)
 history_checkbox_var = IntVar()
 history_checkbox = Checkbutton(root, variable=history_checkbox_var)
-history_checkbox.grid(row=3, column=4, sticky="w")
+history_checkbox.place(x=800, y=90)
 
 # 记忆增强
 memory_enhance_label = Label(root, text="记忆增强", font={"宋体", 11}, width=8)
-memory_enhance_label.grid(row=4, column=3, sticky="ne")
+memory_enhance_label.place(x=730, y=110)
 memory_enhance_var = IntVar()
 memory_enhance_checkbox = Checkbutton(root, variable=memory_enhance_var)
-memory_enhance_checkbox.grid(row=4, column=4, sticky="nw")
+memory_enhance_checkbox.place(x=800, y=110)
 
 # 发送按钮
-send_button = Button(root, text="发送", width=20, font={"宋体", 11}, command=send)
-send_button.grid(row=3, column=5, sticky="w")
+send_button = Button(root, text="发送", width=20, height=2, font={"宋体", 11}, command=send)
+send_button.place(x=850, y=90)
 
 # 重置按钮
-reset_button = Button(root, text="重置", width=20, font={"宋体", 11}, command=reset)
-reset_button.grid(row=3, column=5, sticky="e")
+reset_button = Button(root, text="重置", width=20, height=2, font={"宋体", 11}, command=reset)
+reset_button.place(x=1050, y=90)
 
 # 模型输出
 model_output_text = Text(root, width=70, height=40, font={"宋体", 11})
-model_output_text.grid(row=4, column=3, rowspan=4, columnspan=10, sticky="se")
+model_output_text.place(x=730, y=140)
 
 root.mainloop()
