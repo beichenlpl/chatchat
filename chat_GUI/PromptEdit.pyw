@@ -242,6 +242,7 @@ class ChatModel(object):
         self.mini_search = MiniSearch()
         self.memory_enhance = memory_enhance
         self.top_n = top_n
+        self.__is_stop = False
 
     def prompt(self, prompt: str):
         if len(self.messages) > 10:
@@ -253,6 +254,7 @@ class ChatModel(object):
 
     def reset(self):
         self.messages = []
+        self.__is_stop = True
         if self.memory_enhance:
             self.mini_search.index("__model_chat_history_index__").drop()
 
@@ -271,7 +273,8 @@ class ChatModel(object):
         for line in response.iter_lines():
             if line:
                 data_line = line.decode('utf-8')[6:]
-                if data_line == "[DONE]":
+                if data_line == "[DONE]" or self.__is_stop:
+                    self.__is_stop = False
                     break
                 chunk = json.loads(data_line)["choices"][0]["delta"].get("content")
                 if chunk:
